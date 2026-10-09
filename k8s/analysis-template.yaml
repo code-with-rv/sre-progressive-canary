@@ -1,0 +1,37 @@
+# Reference AnalysisTemplate. Compare with your existing file and adjust the
+# metric names/labels to match what app/main.py actually exports.
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: canary-slo-burn-check
+spec:
+  args:
+    - name: canary-version
+      value: v2.0.0
+  metrics:
+    - name: error-rate
+      interval: 15s
+      count: 8
+      failureLimit: 1          # aborts on the 2nd failed measurement (~30s)
+      provider:
+        prometheus:
+          address: http://prometheus-server.monitoring.svc.cluster.local:80
+          query: |
+            sum(rate(http_requests_total{status=~"5..", version="{{args.canary-version}}"}[1m]))
+            /
+            sum(rate(http_requests_total{version="{{args.canary-version}}"}[1m]))
+      # No `<= 0.01` inside PromQL: filtering would return an empty result
+      # exactly when the SLO is breached. Evaluate the threshold here instead.
+      # Empty result = no traffic yet, treated as pass.
+      successCondition: len(result) == 0 || result[0] <= 0.01
+    - name: p95-latency
+      interval: 15s
+      count: 8
+      failureLimit: 1
+      provider:
+        prometheus:
+          address: http://prometheus-server.monitoring.svc.cluster.local:80
+          query: |
+            histogram_quantile(0.95,
+              sum(rate(http_request_duration_seconds_bucket{version="{{args.canary-version}}"}[1m])) by (le))
+      successCondition: len(result) == 0 || result[0] <= 0.5
