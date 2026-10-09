@@ -201,12 +201,3 @@ Fault injection is per pod, so port-forwarding to `orders-preview` targets the c
 * Metric names in the AnalysisTemplate must match those exported by `app/main.py`.
 
 ---
-
-## Interview Talking Points
-
-| Question | Suggested Answer |
-| :--- | :--- |
-| **"Why not standard K8s rolling updates?"** | *"Rolling updates replace pods without evaluating customer-facing telemetry. A regression with a 2% failure rate can reach 100% of pods before anyone notices. Progressive canary delivery limits the blast radius to 10% and checks SLO burn before advancing."* |
-| **"How do you avoid false-positive rollbacks?"** | *"Measurements run every 15s over a 1m rate window, and `failureLimit: 1` requires two failed measurements before aborting, so a single noisy sample doesn't trigger a rollback."* |
-| **"Which signals did you choose and why?"** | *"The four Golden Signals: latency (p95/p99 histograms), traffic (RPS), errors (5xx vs 2xx) and saturation (in-flight requests). The canary gate uses the error and latency SLIs."* |
-| **"Why evaluate the threshold in `successCondition`?"** | *"Putting a comparison in PromQL drops the series when the SLO is breached, giving an empty result that is easy to mis-handle. Returning the raw ratio and judging it in Argo makes failures explicit."* |
