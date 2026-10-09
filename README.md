@@ -201,3 +201,19 @@ Fault injection is per pod, so port-forwarding to `orders-preview` targets the c
 * Metric names in the AnalysisTemplate must match those exported by `app/main.py`.
 
 ---
+## 🤝 Contributing
+
+Suggestions and pull requests are welcome.
+
+1. Fork the repository
+2. Create a branch: `git checkout -b feature/your-feature`
+3. Commit your changes: `git commit -m "Add your feature"`
+4. Push the branch: `git push origin feature/your-feature`
+5. Open a pull request
+
+---
+
+## 📄 License
+
+_Add a license (e.g. MIT) and include a `LICENSE` file._
+
